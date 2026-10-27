@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>EXL Prep Tracker</title>
+<style>
+:root{--bg:#f7f6f2;--card:#fff;--tx:#1c1c1a;--mu:#6b6a64;--ac:#1d6b57;--ln:#e4e2da;--ok:#e6f3ee;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#161614;--card:#21211e;--tx:#ecebe5;--mu:#a09f97;--ac:#5fc4a4;--ln:#34332f;--ok:#1d2d27;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#161614;--card:#21211e;--tx:#ecebe5;--mu:#a09f97;--ac:#5fc4a4;--ln:#34332f;--ok:#1d2d27;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:640px;margin:0 auto;padding:16px}
+h1{font-size:22px;margin:4px 0}
+.sub{color:var(--mu);font-size:14px;margin:0 0 14px}
+.bar{height:10px;background:var(--ln);border-radius:6px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ac);width:0;transition:width .25s}
+.top{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:14px;margin-bottom:12px}
+.top b{font-size:28px}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding:4px 0 10px}
+.tabs button{flex:none;border:1px solid var(--ln);background:var(--card);color:var(--tx);border-radius:20px;padding:8px 14px;font-size:14px}
+.tabs button.on{background:var(--ac);color:var(--bg);border-color:var(--ac)}
+.day{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+.day.today{border-color:var(--ac);box-shadow:0 0 0 1px var(--ac)}
+.day.done{background:var(--ok)}
+.dh{display:flex;justify-content:space-between;gap:8px;font-weight:600;margin-bottom:6px}
+.dh span{color:var(--mu);font-weight:400;font-size:13px;white-space:nowrap}
+label{display:flex;gap:10px;align-items:flex-start;padding:7px 0;cursor:pointer;font-size:15px}
+input{width:22px;height:22px;flex:none;margin:1px 0 0;accent-color:var(--ac)}
+label.c span{color:var(--mu);text-decoration:line-through}
+small{color:var(--mu)}
+.reset{margin:18px 0;background:none;border:1px solid var(--ln);color:var(--mu);border-radius:8px;padding:8px 12px}
+</style>
+</head>
+<body>
+<main>
+<h1>EXL Prep Tracker</h1>
+<p class="sub">28 days · about 3.5 hrs a day · tick as you finish</p>
+<div class="top"><b id="pct">0%</b> <small id="cnt"></small><div class="bar"><i id="pb"></i></div></div>
+<div class="tabs" id="tabs"></div>
+<div id="list"></div>
+<button class="reset" id="reset">Reset all ticks</button>
+</main>
+<script>
+var START=new Date(2026,9,27);
+var D=[
+["Python basics, SQL start","Python: strings, lists, loops + 3 easy problems (1 hr)","SQL SELECT/WHERE/ORDER BY; ML: supervised vs unsupervised (1.5 hrs)"],
+["Dicts, GROUP BY, overfitting","Python dicts, sets, functions (1 hr)","SQL GROUP BY/HAVING; ML: overfitting, train/test split (1.5 hrs)"],
+["OOP, joins, bias/variance","Python OOP (1 hr)","SQL joins (4 types); ML: bias vs variance (1.5 hrs)"],
+["Exceptions, join practice, metrics","Python exceptions, comprehensions (1 hr)","SQL joins practice (15 queries); ML: precision, recall, F1 (1.5 hrs)"],
+["Classic problems, subqueries","Python: two-sum, duplicates, word frequency (1 hr)","SQL subqueries; ML: gradient descent (1.5 hrs)"],
+["Mixed practice, normalization","Mixed Python coding practice (1 hr)","SQL normalization and keys; aptitude test (1.5 hrs)"],
+["Week 1 revision","Revise Python and SQL notes (1 hr)","20-question self-test on Week 1 (1.5 hrs)"],
+["Window functions, neural nets","Python easy-medium arrays and strings (1 hr)","SQL window functions; neural network basics (1.5 hrs)"],
+["SQL interview queries","SQL: second-highest salary, duplicates, top N per group (1 hr)","Activation functions, backpropagation (idea only) (1.5 hrs)"],
+["Tokenization, TF-IDF","Coding practice (1 hr)","NLP: tokenization, stemming vs lemmatization, TF-IDF (1.5 hrs)"],
+["Embeddings, CNN vs RNN","Coding practice (1 hr)","Embeddings; CNN vs RNN/LSTM (1.5 hrs)"],
+["Transformers and attention","SQL indexes (1 hr)","Transformers and attention, nanoGPT video (1.5 hrs)"],
+["Intent, entity, slots","Mixed coding problems (1 hr)","Intent, entity, slot filling (1.5 hrs)"],
+["Mock test 1","Mock test 1, timed (1 hr)","Review every mistake in your notebook (1.5 hrs)"],
+["LLM basics, prompting","LLM basics: temperature, top-p, context window (1 hr)","Prompt engineering: zero-shot, few-shot, system prompts (1.5 hrs)"],
+["Hallucination, RAG intro","Hallucination causes and fixes (1 hr)","Start the RAG course (1.5 hrs)"],
+["RAG pipeline","RAG pipeline: chunking, embeddings, vector DB, retrieval (1 hr)","RAG vs fine-tuning (1.5 hrs)"],
+["Project work","Work on the insurance RAG project, see Project tab (1 hr)","Keep coding practice going (1.5 hrs)"],
+["GCP basics","GCP: Vertex AI, Dialogflow CX, Agent Builder (1 hr)","Skills Boost labs (1.5 hrs)"],
+["GCP badge","Earn a Skills Boost badge (1 hr)","Cloud Run, BigQuery; SDLC/STLC (1.5 hrs)"],
+["Project walkthrough","Write your 5-minute project walkthrough (1 hr)","Speak it aloud twice and record yourself (1.5 hrs)"],
+["Mock test 2","Mock test 2, aptitude + technical MCQs, timed (1 hr)","Review mistakes (1.5 hrs)"],
+["Mock interview: Python, SQL","Mock interview with Claude: Python and SQL (1 hr)","Fix the gaps it finds (1.5 hrs)"],
+["Mock interview: ML, NLP, RAG","Mock interview with Claude: ML, NLP, RAG (1 hr)","Fix the gaps it finds (1.5 hrs)"],
+["Mock interview: project","Mock interview with Claude: project and behavioral (1 hr)","Refine your answers (1.5 hrs)"],
+["Fix weak spots","Redo problems from your mistakes notebook (1 hr)","Polish your resume (1.5 hrs)"],
+["Mock test 3","Mock test 3, timed (1 hr)","Revise all notes sheets (1.5 hrs)"],
+["Final light revision","Light revision only (1 hr)","Rest well, sleep early (1.5 hrs)"]
+];
+var P=[
+"Day 1: Set up repo from your FastAPI skeleton; collect 3-4 sample policy PDFs",
+"Day 2: Ingestion: extract text, chunk (~500 tokens), embed, store in Chroma",
+"Day 3: Retrieval function; test with 10 questions",
+"Day 4: Grounded answer prompt with source citations",
+"Day 5: Conversation memory for follow-up questions",
+"Day 6: Human-handoff threshold and Groq fallback",
+"Day 7: Evaluation: 20 test questions, record correct and grounded",
+"Day 8: Dockerize and deploy to Cloud Run",
+"Day 9: README, architecture diagram, demo GIF, GitHub link on resume"
+];
+var FIX=["Aptitude practice (30 min)","Speak out loud or review mistakes (30 min)"];
+var S={},tab=0;
+try{S=JSON.parse(localStorage.getItem("exlprep")||"{}")}catch(e){S={}}
+function save(){try{localStorage.setItem("exlprep",JSON.stringify(S))}catch(e){}}
+function dayTasks(i){return [[D[i][1],"a"],[D[i][2],"b"],[FIX[0],"c"],[FIX[1],"d"]]}
+function dayDone(i){return dayTasks(i).filter(function(t){return S["d"+i+t[1]]}).length}
+function total(){var n=0,d=0;for(var i=0;i<28;i++){n+=4;d+=dayDone(i)}for(var j=0;j<P.length;j++){n++;if(S["p"+j])d++}return[d,n]}
+function fmt(i){var x=new Date(START.getTime()+i*864e5);return x.toLocaleDateString("en-IN",{day:"numeric",month:"short"})}
+function render(){
+ var t=total();document.getElementById("pct").textContent=Math.round(t[0]/t[1]*100)+"%";
+ document.getElementById("cnt").textContent=t[0]+" of "+t[1]+" tasks done";
+ document.getElementById("pb").style.width=(t[0]/t[1]*100)+"%";
+ var names=["Week 1","Week 2","Week 3","Week 4","Project"],tb=document.getElementById("tabs");tb.innerHTML="";
+ names.forEach(function(n,k){var b=document.createElement("button");b.textContent=n;if(k===tab)b.className="on";b.onclick=function(){tab=k;render()};tb.appendChild(b)});
+ var out="",today=Math.floor((new Date().setHours(0,0,0,0)-START.getTime())/864e5);
+ if(tab<4){for(var i=tab*7;i<tab*7+7;i++){var dn=dayDone(i);
+  out+='<div class="day'+(dn===4?' done':'')+(i===today?' today':'')+'"><div class="dh"><div>Day '+(i+1)+': '+D[i][0]+'</div><span>'+fmt(i)+' · '+dn+'/4</span></div>';
+  dayTasks(i).forEach(function(k){var key="d"+i+k[1],on=S[key];out+='<label class="'+(on?'c':'')+'"><input type="checkbox" data-k="'+key+'"'+(on?' checked':'')+'><span>'+k[0]+'</span></label>'});
+  out+='</div>'}}
+ else{out+='<div class="day"><div class="dh"><div>Insurance RAG assistant (about 1.5 hrs a day)</div></div>';
+  P.forEach(function(p,j){var key="p"+j,on=S[key];out+='<label class="'+(on?'c':'')+'"><input type="checkbox" data-k="'+key+'"'+(on?' checked':'')+'><span>'+p+'</span></label>'});out+='</div>'}
+ var l=document.getElementById("list");l.innerHTML=out;
+ l.querySelectorAll("input").forEach(function(c){c.onchange=function(){if(c.checked)S[c.dataset.k]=1;else delete S[c.dataset.k];save();render()}})
+}
+document.getElementById("reset").onclick=function(){if(confirm("Clear all ticks?")){S={};save();render()}};
+render();
+</script>
+</body>
+</html>
